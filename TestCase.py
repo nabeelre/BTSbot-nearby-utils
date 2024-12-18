@@ -14,7 +14,9 @@ class TestCase:
     describing the test case.
     """
 
-    def __init__(self, jd_min, jd_max, neg_ids, pos_ids, notes: str, name: str):
+    def __init__(self, jd_min: float, jd_max: float,
+                 neg_ids: list, pos_ids: list,
+                 notes: str, name: str):
         if jd_min >= jd_max:
             raise ValueError("jd_min must be less than jd_max")
 
@@ -39,7 +41,7 @@ class TestCase:
     #           f" {len(self.neg_ids)} negative examples and {len(self.pos_ids)} positive examples")
     #     print(f"Notes: {self.notes}")
 
-    def write_output(self, run_name, filterid, annotations, objids):
+    def write_output(self, annotations, objids, filterid, run_name, status):
         # Write annotations to disk
         with open(f'logs/{run_name}/{self.name}_annotations.json', 'w') as f:
             json.dump(annotations, f, indent=2)
@@ -111,20 +113,20 @@ class TestCase:
         # Take only unique object IDs
         objids_passed = list(set(objids_passed))
 
-        # failed = False
         # Check if all positive examples are in the output
+        failed = False
         for pos_id in self.pos_ids:
             if pos_id not in objids_passed:
-                print(f"Failed: {pos_id} not in output")
-                # failed = True
+                print(f"FAILED: {pos_id} NOT IN OUTPUT")
+                failed = True
 
         # Check if all negative examples are not in the output
         for neg_id in self.neg_ids:
             if neg_id in objids_passed:
-                print(f"Failed: {neg_id} in output")
-                # failed = True
+                print(f"FAILED: {neg_id} IN OUTPUT")
+                failed = True
+        print()
 
-        # if failed:
-        #     self.describe_test()
+        self.write_output(annotations, objids_passed, filterid, run_name, failed)
 
-        self.write_output(run_name, filterid, annotations, objids_passed)
+        return failed
