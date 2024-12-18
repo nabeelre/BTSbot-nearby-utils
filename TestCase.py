@@ -15,8 +15,17 @@ class TestCase:
     """
 
     def __init__(self, jd_min, jd_max, neg_ids, pos_ids, notes: str, name: str):
-        self.jd_min = jd_min  # starting Julian date
-        self.jd_max = jd_max  # ending Julian date
+        if jd_min >= jd_max:
+            raise ValueError("jd_min must be less than jd_max")
+
+        # Automatically convert to JDs if given as MJD
+        if jd_min < 2400000:
+            jd_min += 2400000.5
+        if jd_max < 2400000:
+            jd_max += 2400000.5
+
+        self.jd_min = jd_min  # starting JD
+        self.jd_max = jd_max  # ending JD
         self.neg_ids = neg_ids  # list of ZTFIDs that should not be in the output
         self.pos_ids = pos_ids  # list of ZTFIDs that should be in the output
         self.notes = notes  # description of what is being tested
@@ -64,15 +73,14 @@ class TestCase:
         if verbose:
             num_days = (self.jd_max - self.jd_min)
             num_months = ((self.jd_max - self.jd_min) / 30.5)
-            print(f"TestCase from {self.jd_min} to {self.jd_max};" +
-                  f"{num_days:.0f} day / {num_months:.1f} month date range")
+            print(f"TestCase {self.name} from {self.jd_min} to {self.jd_max}")
+            print(f"{num_days:.0f} day / {num_months:.1f} month date range")
 
         objids_passed = []
         annotations = []
 
-        for jd in tqdm(jd_slices,
-                       desc=f'TestCase on {filterid} for {num_days:.0f} days',
-                       unit='day'):
+        for jd in tqdm(jd_slices, unit='day',
+                       desc=f'Running {self.name} over {num_days:.0f} days'):
             data = {
                 "start_date": jd,
                 "end_date": jd + 1,
