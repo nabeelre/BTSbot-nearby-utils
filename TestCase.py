@@ -68,7 +68,7 @@ class TestCase:
         if verbose:
             num_days = (self.jd_max - self.jd_min)
             num_months = ((self.jd_max - self.jd_min) / 30.5)
-            print(f"TestCase {self.name} from {self.jd_min} to {self.jd_max}" +
+            print(f"TestCase {self.name} from {self.jd_min} to {self.jd_max} " +
                   f"({num_days:.0f} day / {num_months:.1f} month)")
 
         objids_passed = []
