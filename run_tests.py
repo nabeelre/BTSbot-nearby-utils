@@ -37,11 +37,11 @@ def __main__():
     TC_bad_hist = [
         TestCase(
             60656.0, 60660.0, neg_ids=["ZTF24abxxafd"], pos_ids=[],
-            notes="bad_hist1: ZTF24abxxafd", name="bad_hist1"
+            notes="ZTF24abxxafd", name="bad_hist1"
         ),
         TestCase(
             60651.0, 60655.0, neg_ids=["ZTF24abtiont"], pos_ids=[],
-            notes="bad_hist1: ZTF24abtiont", name="bad_hist2"
+            notes="ZTF24abtiont", name="bad_hist2"
         )
     ]
 
@@ -54,10 +54,10 @@ def __main__():
         )]
 
     if any(statuses):
-        print("SOME TESTS FAILED:")
+        print("SOME TESTS FAILED")
         for TC, status in zip(TCs, statuses):
             if status:
-                print(f"name:{TC.name}, desc:{TC.notes}")
+                print(f"  {TC.name}: {TC.notes}")
 
 
 if __name__ == "__main__":

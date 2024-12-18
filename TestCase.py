@@ -33,14 +33,6 @@ class TestCase:
         self.notes = notes  # description of what is being tested
         self.name = name  # single word name for the test case
 
-    # def describe_test(self):
-    #     """
-    #     Print a description of the test case
-    #     """
-    #     print(f"Test case from {self.jd_min} to {self.jd_max}:" +
-    #           f" {len(self.neg_ids)} negative examples and {len(self.pos_ids)} positive examples")
-    #     print(f"Notes: {self.notes}")
-
     def write_output(self, annotations, objids, filterid, run_name, status):
         # Write annotations to disk
         with open(f'logs/{run_name}/{self.name}_annotations.json', 'w') as f:
@@ -53,6 +45,7 @@ class TestCase:
             f.write(f"#{self.jd_min} - {self.jd_max} on filter {filterid}\n")
             f.write(f"#pos:{self.pos_ids}\n")
             f.write(f"#neg:{self.neg_ids}\n")
+            f.write(f"#test passed:{status}\n")
 
             f.write("ZTFID\n")
             for objid in objids:
@@ -75,14 +68,14 @@ class TestCase:
         if verbose:
             num_days = (self.jd_max - self.jd_min)
             num_months = ((self.jd_max - self.jd_min) / 30.5)
-            print(f"TestCase {self.name} from {self.jd_min} to {self.jd_max}")
-            print(f"{num_days:.0f} day / {num_months:.1f} month date range")
+            print(f"TestCase {self.name} from {self.jd_min} to {self.jd_max}" +
+                  f"({num_days:.0f} day / {num_months:.1f} month)")
 
         objids_passed = []
         annotations = []
 
         for jd in tqdm(jd_slices, unit='day',
-                       desc=f'Running {self.name} over {num_days:.0f} days'):
+                       desc=f'Running {self.name}'):
             data = {
                 "start_date": jd,
                 "end_date": jd + 1,
