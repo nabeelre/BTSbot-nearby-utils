@@ -33,7 +33,7 @@ class TestCase:
         self.notes = notes  # description of what is being tested
         self.name = name  # single word name for the test case
 
-    def write_output(self, annotations, objids, filterid, run_name, status):
+    def write_output(self, annotations, objids, filterid, run_name, failed):
         # Write annotations to disk
         with open(f'logs/{run_name}/{self.name}_annotations.json', 'w') as f:
             json.dump(annotations, f, indent=2)
@@ -45,7 +45,7 @@ class TestCase:
             f.write(f"#{self.jd_min} - {self.jd_max} on filter {filterid}\n")
             f.write(f"#pos:{self.pos_ids}\n")
             f.write(f"#neg:{self.neg_ids}\n")
-            f.write(f"#test passed:{status}\n")
+            f.write(f"#test passed:{not failed}\n")
 
             f.write("ZTFID\n")
             for objid in objids:
