@@ -28,7 +28,7 @@ def __main__():
     os.makedirs(f"logs/{run_t_stamp}/")
     curr_filterid = 1182
 
-    # Create and evaluate TestCases
+    # Create TestCases
     TC_sn2024jlf = TestCase(
         2460456.0, 2460460.0, neg_ids=[], pos_ids=["ZTF24aaozxhx"],
         notes="Recover 2024jlf / ZTF24aaozxhx", name="SN2024jlf"
@@ -45,7 +45,34 @@ def __main__():
         )
     ]
 
-    TCs = [TC_sn2024jlf] + TC_bad_hist
+    TC_bad_assosciation = [
+        TestCase(
+            60642.0, 60646.0, neg_ids=["ZTF24abuqraz"], pos_ids=[],
+            notes="ZTF24abuqraz", name="bad_host1"
+        )
+    ]
+
+    TC_no_lims = [
+        TestCase(
+            60631.0, 60635.0, neg_ids=["ZTF24abszdqt"], pos_ids=[],
+            notes="ZTF24abszdqt", name="no_lims1"
+        ),
+        TestCase(
+            60497.0, 60501.0, neg_ids=["ZTF24aaupozr"], pos_ids=[],
+            notes="ZTF24aaupozr", name="no_lims2"
+        )
+    ]
+
+    TC_bogus = [
+        TestCase(
+            60620.0, 60624.0, neg_ids=["ZTF24abrhrue"], pos_ids=[],
+            notes="ZTF24abrhrue", name="bogus1"
+        )
+    ]
+
+    # Evaluate all TestCases
+    TCs = [TC_sn2024jlf] + TC_bad_hist + TC_bad_assosciation + TC_no_lims + TC_bogus
+    print(f"Evaluating {len(TCs)} TestCases")
     statuses = []
     for TC in TCs:
         statuses += [TC.evaluate_test(
