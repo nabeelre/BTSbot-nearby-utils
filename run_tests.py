@@ -22,7 +22,7 @@ streamid_40Mpc = 1191
 streamid_60Mpc = 1194
 streamid_80Mpc = 1195
 
-latest_SEDM = Filter(streamid_60Mpc, "ig5xn5", "SEDM")
+latest_SEDM = Filter(streamid_60Mpc, "zl40lh", "SEDM")
 
 # TODO write function for running and comparing output of two filters
 
@@ -101,11 +101,13 @@ def __main__():
 
     # Only non-detections (2.5-10 days since first alert), trigger SEDM but not others
     TC_loose_lims = [
-        TestCase(
-            60704.0, 60708.0, neg_ids=[], pos_ids=["ZTF25aadlcbi"],
-            notes="ZTF25aadlcbi, 8 days between first alert and last non-det",
-            name="loose_lims1"
-        ),
+        # Has limit immediately before first alert
+        # TODO consider adding minimum separation between last non-det and first alert
+        # TestCase(
+        #     60704.0, 60708.0, neg_ids=[], pos_ids=["ZTF25aadlcbi"],
+        #     notes="ZTF25aadlcbi, 8 days between first alert and last non-det",
+        #     name="loose_lims1"
+        # ),
         TestCase(
             60704.0, 60708.0, neg_ids=[], pos_ids=["ZTF25aadhlrs"],
             notes="ZTF25aadhlrs, 7 days between first alert and last non-det",
@@ -124,16 +126,17 @@ def __main__():
 
     # Evaluate all TestCases
     TCs = TC_z001 + TC_bad_hist + TC_bad_assosciation + TC_no_lims + TC_bogus + TC_loose_lims
+
     print(f"Evaluating {len(TCs)} TestCases")
     statuses = []
     for TC in TCs:
-        statuses += [TC.evaluate_test(
+        failed = TC.evaluate_test(
             Kowalski=k, run_name=run_t_stamp,
-            stream_id=curr_filter.stream_id, ver_hash=curr_filter.ver_hash,
-            verbose=True
-        )]
+            filt=curr_filter, verbose=True
+        )
+        statuses += [not failed]
 
-    if any(statuses):
+    if not all(statuses):
         print("SOME TESTS FAILED")
         for TC, status in zip(TCs, statuses):
             if status:

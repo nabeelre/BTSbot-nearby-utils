@@ -7,7 +7,7 @@ class Filter:
     specified, the version of the filter marked as active on Fritz is used.
     """
 
-    def __init__(self, stream_id: int, hash: str = None):
+    def __init__(self, stream_id: int, ver_hash: str = "", instrument: str = ""):
         self.stream_id = stream_id
-        self.ver_hash = ""
-        self.instrument = ""
+        self.ver_hash = ver_hash
+        self.instrument = instrument

@@ -1,4 +1,5 @@
 from tqdm import tqdm
+from Filter import Filter
 import json
 
 
@@ -33,7 +34,12 @@ class TestCase:
         self.notes = notes  # description of what is being tested
         self.name = name  # single word name for the test case
 
-    def write_output(self, annotations, objids, filterid, run_name, failed):
+    def write_output(self, annotations, objids, filt, run_name, failed):
+        """
+        Write the provided annotations and objectIds to separate files in the
+        logs directory.
+        """
+
         # Write annotations to disk
         with open(f'logs/{run_name}/{self.name}_annotations.json', 'w') as f:
             json.dump(annotations, f, indent=2)
@@ -42,7 +48,8 @@ class TestCase:
         with open(f'logs/{run_name}/{self.name}_objids.txt', 'w') as f:
             f.write(f"#TestCase: {self.name}\n")
             f.write(f"#{self.notes}\n")
-            f.write(f"#{self.jd_min} - {self.jd_max} on filter {filterid}\n")
+            f.write(f"#{self.jd_min} - {self.jd_max} on filter {filt.stream_id}")
+            f.write(f" ({filt.ver_hash})\n")
             f.write(f"#pos:{self.pos_ids}\n")
             f.write(f"#neg:{self.neg_ids}\n")
             f.write(f"#test passed:{not failed}\n")
@@ -51,15 +58,21 @@ class TestCase:
             for objid in objids:
                 f.write(f"{objid}\n")
 
-    def evaluate_test(self, Kowalski, run_name: str, stream_id: int,
-                      ver_hash: str, apply_autosave_filter: bool = True,
-                      verbose: bool = False):
+    def simulate_alert_stream(self, Kowalski, filt: Filter,
+                              apply_autosave_filter: bool = True,
+                              verbose: bool = False):
         """
-        Call Kowalski API endpoint to run alerts through a filter and evaluate
-        whether the test case is passed. Optianally apply additional autosave
-        filtering before analyzing the output.
-        """
+        Using this TestCase's JD range, simulate the ZTF alert stream running
+        through the provided filter and log the results. Optionally apply an
+        autosave filter to the output before logging.
 
+        Returns
+        -------
+        objids_passed : list
+            List of ZTFIDs that passed the filter
+        annotations : list
+            List of annotations for each object that passed through the filter
+        """
         # Split JD range into 1-day slices
         jd_slices = [self.jd_min]
         while jd_slices[-1] < self.jd_max - 1:
@@ -80,9 +93,10 @@ class TestCase:
                 "start_date": jd,
                 "end_date": jd + 1,
                 "max_time_ms": 300000,
-                "filter_version": ver_hash
+                # "filter_version": filt.ver_hash
             }
-            response = Kowalski.api('POST', f'api/filters/{stream_id}/test', data=data)
+
+            response = Kowalski.api('POST', f'api/filters/{filt.stream_id}/test', data=data)
 
             if response["status"] != "success":
                 print(f"Failed to test filter from {jd} to {jd + 1}: {response['message']}")
@@ -100,12 +114,33 @@ class TestCase:
                     if (item['annotations']['bts'] >= 0.5) &\
                        (item['annotations']['sgscore1'] >= 0.0) &\
                        (item['annotations']['sgscore2'] >= 0.0):
+                        # TODO update autosave filter
                         objids_passed += [item['objectId']]
                 else:
                     objids_passed += [item['objectId']]
 
         # Take only unique object IDs
         objids_passed = list(set(objids_passed))
+
+        return objids_passed, annotations
+
+    def evaluate_test(self, Kowalski, run_name: str, filt: Filter,
+                      apply_autosave_filter: bool = True,
+                      verbose: bool = False):
+        """
+        Call Kowalski API endpoint to run alerts through a filter and evaluate
+        whether the test case is passed. Optianally apply additional autosave
+        filtering before analyzing the output.
+
+        Returns
+        -------
+        failed : bool
+            True if the test case failed, False if it passed
+        """
+
+        objids_passed, annotations = self.simulate_alert_stream(
+            Kowalski, filt, apply_autosave_filter, verbose
+        )
 
         # Check if all positive examples are in the output
         failed = False
@@ -119,8 +154,9 @@ class TestCase:
             if neg_id in objids_passed:
                 print(f"FAILED: {neg_id} IN OUTPUT")
                 failed = True
+        print(f"TestCase {self.name} {'Failed' if failed else 'Passed'}")
         print()
 
-        self.write_output(annotations, objids_passed, stream_id, run_name, failed)
+        self.write_output(annotations, objids_passed, filt, run_name, failed)
 
         return failed
