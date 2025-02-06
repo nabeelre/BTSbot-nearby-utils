@@ -1,4 +1,5 @@
 from TestCase import TestCase
+from Filter import Filter
 from penquins import Kowalski
 import datetime
 import json
@@ -17,11 +18,11 @@ k = Kowalski(
 )
 assert k.ping()
 
-lab_40Mpc_filterid = 1191
-lab_60Mpc_filterid = 1194
-lab_80Mpc_filterid = 1195
+streamid_40Mpc = 1191
+streamid_60Mpc = 1194
+streamid_80Mpc = 1195
 
-latest_SEDM = (lab_60Mpc_filterid, "ig5xn5")
+latest_SEDM = Filter(streamid_60Mpc, "ig5xn5", "SEDM")
 
 # TODO write function for running and comparing output of two filters
 
@@ -30,8 +31,7 @@ def __main__():
     # Create directory for output
     run_t_stamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
     os.makedirs(f"logs/{run_t_stamp}/")
-    curr_filterid = latest_SEDM[0]
-    curr_filerver = latest_SEDM[1]
+    curr_filter = latest_SEDM
 
     # Create TestCases
     TC_z001 = [
@@ -129,7 +129,7 @@ def __main__():
     for TC in TCs:
         statuses += [TC.evaluate_test(
             Kowalski=k, run_name=run_t_stamp,
-            filterid=curr_filterid, filterver=curr_filerver,
+            stream_id=curr_filter.stream_id, ver_hash=curr_filter.ver_hash,
             verbose=True
         )]
 

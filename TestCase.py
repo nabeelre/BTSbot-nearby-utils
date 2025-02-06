@@ -51,8 +51,8 @@ class TestCase:
             for objid in objids:
                 f.write(f"{objid}\n")
 
-    def evaluate_test(self, Kowalski, run_name: str, filterid: int,
-                      apply_autosave_filter: bool = True,
+    def evaluate_test(self, Kowalski, run_name: str, stream_id: int,
+                      ver_hash: str, apply_autosave_filter: bool = True,
                       verbose: bool = False):
         """
         Call Kowalski API endpoint to run alerts through a filter and evaluate
@@ -79,9 +79,10 @@ class TestCase:
             data = {
                 "start_date": jd,
                 "end_date": jd + 1,
-                "max_time_ms": 300000
+                "max_time_ms": 300000,
+                "filter_version": ver_hash
             }
-            response = Kowalski.api('POST', f'api/filters/{filterid}/test', data=data)
+            response = Kowalski.api('POST', f'api/filters/{stream_id}/test', data=data)
 
             if response["status"] != "success":
                 print(f"Failed to test filter from {jd} to {jd + 1}: {response['message']}")
@@ -120,6 +121,6 @@ class TestCase:
                 failed = True
         print()
 
-        self.write_output(annotations, objids_passed, filterid, run_name, failed)
+        self.write_output(annotations, objids_passed, stream_id, run_name, failed)
 
         return failed
