@@ -38,7 +38,7 @@ def __main__():
     TC_z001 = [
         TestCase(
             2460456.0, 2460460.0, neg_ids=[], pos_ids=["ZTF24aaozxhx"],
-            notes="Recover 2024jlf", name="SN 2024jlf"
+            notes="Recover 2024jlf", name="SN2024jlf"
         ),
         TestCase(
             60690.0, 60695.0, neg_ids=[], pos_ids=["ZTF25aacerkv"],

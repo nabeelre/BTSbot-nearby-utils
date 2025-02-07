@@ -157,3 +157,42 @@ class TestCase:
         self.write_output(annotations, objids_passed, filt, run_name, failed)
 
         return failed
+
+    def compare_filters(self, Kowalski, filt_a: Filter, filt_b: Filter,
+                        apply_autosave_filter: bool = True):
+
+        objids_passed_a, annotations_a = self.simulate_alert_stream(
+            Kowalski, filt_a, apply_autosave_filter
+        )
+
+        objids_passed_b, annotations_b = self.simulate_alert_stream(
+            Kowalski, filt_b, apply_autosave_filter
+        )
+
+        passed_both = set(objids_passed_a) & set(objids_passed_b)
+        passed_only_a = set(objids_passed_a) - set(objids_passed_b)
+        passed_only_b = set(objids_passed_b) - set(objids_passed_a)
+
+        print("ObjectIds that passed both filter A and B:")
+        for objid in passed_both:
+            print(objid)
+        print()
+
+        print("ObjectIds that passed only filter A:")
+        for objid in passed_only_a:
+            print(objid)
+        print()
+
+        print("ObjectIds that passed only filter B:")
+        for objid in passed_only_b:
+            print(objid)
+        print()
+
+        # FPs_a = [objid for objid in objids_passed_a if objid in self.neg_ids]
+        # FPs_b = [objid for objid in objids_passed_b if objid in self.neg_ids]
+
+        # FNs_a = [objid for objid in objids_passed_a if objid in self.pos_ids]
+        # FNs_b = [objid for objid in objids_passed_b if objid in self.pos_ids]
+
+        # print(f"False Positives for filter A: {FPs_a}")
+        # print(f"False Positives for filter B: {FPs_b}")
