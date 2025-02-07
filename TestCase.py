@@ -86,12 +86,12 @@ class TestCase:
         annotations = []
 
         for jd in tqdm(jd_slices, unit='day',
-                       desc=f'Running {self.name}'):
+                       desc=f'Running filter {filt.stream_id} ({filt.ver_hash})'):
             data = {
                 "start_date": jd,
                 "end_date": jd + 1,
                 "max_time_ms": 300000,
-                # "filter_version": filt.ver_hash
+                "filter_version": filt.ver_hash
             }
 
             response = Kowalski.api('POST', f'api/filters/{filt.stream_id}/test', data=data)
@@ -164,35 +164,41 @@ class TestCase:
         objids_passed_a, annotations_a = self.simulate_alert_stream(
             Kowalski, filt_a, apply_autosave_filter
         )
-
+        print()
         objids_passed_b, annotations_b = self.simulate_alert_stream(
             Kowalski, filt_b, apply_autosave_filter
         )
+        print()
 
         passed_both = set(objids_passed_a) & set(objids_passed_b)
         passed_only_a = set(objids_passed_a) - set(objids_passed_b)
         passed_only_b = set(objids_passed_b) - set(objids_passed_a)
+        passed_neither = set(self.pos_ids) - passed_both - passed_only_a - passed_only_b
 
-        print("ObjectIds that passed both filter A and B:")
+        print("objectIds that passed both filters:")
         for objid in passed_both:
-            print(objid)
+            prefix = "FP: " if objid in self.neg_ids else "    "
+            print(f"{prefix}{objid}")
         print()
 
-        print("ObjectIds that passed only filter A:")
+        print(f"objectIds that passed only filter {filt_a.stream_id} ({filt_a.ver_hash}):")
         for objid in passed_only_a:
-            print(objid)
+            prefix = "FP: " if objid in self.neg_ids else "    "
+            print(f"{prefix}{objid}")
         print()
 
-        print("ObjectIds that passed only filter B:")
+        print(f"objectIds that passed only filter {filt_b.stream_id} ({filt_b.ver_hash}):")
         for objid in passed_only_b:
-            print(objid)
+            prefix = "FP: " if objid in self.neg_ids else "    "
+            print(f"{prefix}{objid}")
         print()
 
-        # FPs_a = [objid for objid in objids_passed_a if objid in self.neg_ids]
-        # FPs_b = [objid for objid in objids_passed_b if objid in self.neg_ids]
+        print("objectIds that passed neither filter:")
+        for objid in passed_neither:
+            print("FN: ", objid)
+        print()
 
-        # FNs_a = [objid for objid in objids_passed_a if objid in self.pos_ids]
-        # FNs_b = [objid for objid in objids_passed_b if objid in self.pos_ids]
+        # failed = (len(passed_neither) > 0) or \
+        #          (len((objids_passed_a | objids_passed_b) & set(self.neg_ids)) > 0)
 
-        # print(f"False Positives for filter A: {FPs_a}")
-        # print(f"False Positives for filter B: {FPs_b}")
+        # return failed
