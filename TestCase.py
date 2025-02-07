@@ -59,8 +59,7 @@ class TestCase:
                 f.write(f"{objid}\n")
 
     def simulate_alert_stream(self, Kowalski, filt: Filter,
-                              apply_autosave_filter: bool = True,
-                              verbose: bool = False):
+                              apply_autosave_filter: bool = True):
         """
         Using this TestCase's JD range, simulate the ZTF alert stream running
         through the provided filter and log the results. Optionally apply an
@@ -78,11 +77,10 @@ class TestCase:
         while jd_slices[-1] < self.jd_max - 1:
             jd_slices.append(jd_slices[-1] + 1)
 
-        if verbose:
-            num_days = (self.jd_max - self.jd_min)
-            num_months = ((self.jd_max - self.jd_min) / 30.5)
-            print(f"TestCase {self.name} from {self.jd_min} to {self.jd_max} " +
-                  f"({num_days:.0f} day / {num_months:.1f} month)")
+        num_days = (self.jd_max - self.jd_min)
+        num_months = ((self.jd_max - self.jd_min) / 30.5)
+        print(f"TestCase {self.name} from {self.jd_min} to {self.jd_max} " +
+              f"({num_days:.0f} day / {num_months:.1f} month)")
 
         objids_passed = []
         annotations = []
@@ -125,8 +123,7 @@ class TestCase:
         return objids_passed, annotations
 
     def evaluate_test(self, Kowalski, run_name: str, filt: Filter,
-                      apply_autosave_filter: bool = True,
-                      verbose: bool = False):
+                      apply_autosave_filter: bool = True):
         """
         Call Kowalski API endpoint to run alerts through a filter and evaluate
         whether the test case is passed. Optianally apply additional autosave
@@ -139,7 +136,7 @@ class TestCase:
         """
 
         objids_passed, annotations = self.simulate_alert_stream(
-            Kowalski, filt, apply_autosave_filter, verbose
+            Kowalski, filt, apply_autosave_filter
         )
 
         # Check if all positive examples are in the output

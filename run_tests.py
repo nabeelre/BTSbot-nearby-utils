@@ -18,6 +18,7 @@ k = Kowalski(
 )
 assert k.ping()
 
+prod_BTSbotnearby = 1174
 streamid_40Mpc = 1191
 streamid_60Mpc = 1194
 streamid_80Mpc = 1195
@@ -95,7 +96,7 @@ def __main__():
         ),
         TestCase(
             60676.0, 60682.0, neg_ids=["ZTF25aaastwn"], pos_ids=[],
-            notes="ZTF25aaastwn, medium drb", name="bogus2"
+            notes="ZTF25aaastwn, medium drb", name="bogus3"
         )
     ]
 
@@ -132,14 +133,14 @@ def __main__():
     for TC in TCs:
         failed = TC.evaluate_test(
             Kowalski=k, run_name=run_t_stamp,
-            filt=curr_filter, verbose=True
+            filt=curr_filter
         )
         statuses += [not failed]
 
     if not all(statuses):
         print("SOME TESTS FAILED")
-        for TC, status in zip(TCs, statuses):
-            if status:
+        for TC, passed in zip(TCs, statuses):
+            if not passed:
                 print(f"  {TC.name}: {TC.notes}")
 
 
