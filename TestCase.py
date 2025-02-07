@@ -34,19 +34,22 @@ class TestCase:
         self.notes = notes  # description of what is being tested
         self.name = name  # single word name for the test case
 
-    def write_output(self, annotations, objids, filt, run_name, failed):
+    def write_output(self, annotations, objids, filt, run_name, failed,
+                     output_name=None):
         """
         Write the provided annotations and objectIds to separate files in the
         logs directory.
         """
+        if output_name is None:
+            output_name = self.name
 
         # Write annotations to disk
-        with open(f'logs/{run_name}/{self.name}_annotations.json', 'w') as f:
+        with open(f'logs/{run_name}/{output_name}_annotations.json', 'w') as f:
             json.dump(annotations, f, indent=2)
 
         # Write list of ZTFIDs to disk
-        with open(f'logs/{run_name}/{self.name}_objids.txt', 'w') as f:
-            f.write(f"#TestCase: {self.name}\n")
+        with open(f'logs/{run_name}/{output_name}_objids.txt', 'w') as f:
+            f.write(f"#TestCase: {output_name}\n")
             f.write(f"#{self.notes}\n")
             f.write(f"#{self.jd_min} - {self.jd_max} on filter {filt.stream_id}")
             f.write(f" ({filt.ver_hash})\n")
@@ -159,7 +162,7 @@ class TestCase:
         return failed
 
     def compare_filters(self, Kowalski, filt_a: Filter, filt_b: Filter,
-                        apply_autosave_filter: bool = True):
+                        run_name: str, apply_autosave_filter: bool = True):
 
         objids_passed_a, annotations_a = self.simulate_alert_stream(
             Kowalski, filt_a, apply_autosave_filter
@@ -193,10 +196,21 @@ class TestCase:
             print(f"{prefix}{objid}")
         print()
 
-        print("objectIds that passed neither filter:")
+        print("objectIds that passed neither filter (False Negatives):")
         for objid in passed_neither:
             print("FN: ", objid)
         print()
+
+        failed_a = any(pos_id not in objids_passed_a for pos_id in self.pos_ids) or \
+            any(neg_id in objids_passed_a for neg_id in self.neg_ids)
+
+        failed_b = any(pos_id not in objids_passed_b for pos_id in self.pos_ids) or \
+            any(neg_id in objids_passed_b for neg_id in self.neg_ids)
+
+        self.write_output(annotations_a, objids_passed_a, filt_a,
+                          run_name, failed_a, output_name=f"{self.name}_{filt_a.ver_hash}")
+        self.write_output(annotations_b, objids_passed_b, filt_b,
+                          run_name, failed_b, output_name=f"{self.name}_{filt_b.ver_hash}")
 
         # failed = (len(passed_neither) > 0) or \
         #          (len((objids_passed_a | objids_passed_b) & set(self.neg_ids)) > 0)
