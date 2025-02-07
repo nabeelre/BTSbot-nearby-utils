@@ -1,7 +1,9 @@
 from TestCase import TestCase
-from Filter import Filter
 from penquins import Kowalski
+from Filter import Filter
+import datetime
 import json
+import os
 
 with open('/Users/nabeelr/credentials.json', 'r') as f:
     creds = json.load(f)
@@ -16,20 +18,44 @@ k = Kowalski(
 )
 assert k.ping()
 
-prod_BTSbotnearby = 1174
-streamid_60Mpc = 1194
+prod_SEDM_id = 1174
+test_SEDM_id = 1194
 
-prod_SEDM = Filter(prod_BTSbotnearby, "h2qjt2", "SEDM")
-latest_SEDM = Filter(streamid_60Mpc, "zl40lh", "SEDM")
+prod_UVOT_id = 1191
+lab_UVOT_id = 1193
 
 
-def __main__():
+def test_SEDM_filter():
+    prod_SEDM = Filter(test_SEDM_id, "d4e8w3", "SEDM")
+    latest_SEDM = Filter(test_SEDM_id, "e6921c", "SEDM")
+
     TC = TestCase(
         2460456.0, 2460460.0, neg_ids=[], pos_ids=["ZTF24aaozxhx"],
         notes="Recover 2024jlf", name="SN2024jlf"
     )
-
     TC.compare_filters(Kowalski=k, filt_a=prod_SEDM, filt_b=latest_SEDM)
+
+
+def test_UVOT_filter():
+    prod_UVOT = Filter(prod_UVOT_id, "fomkqf", "UVOT")
+    latest_UVOT = Filter(lab_UVOT_id, "9x5366", "UVOT")
+
+    # Create directory for output
+    run_t_stamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    os.makedirs(f"logs/cmp_{run_t_stamp}/")
+
+    TC = TestCase(
+        2460456.0, 2460460.0, neg_ids=[], pos_ids=["ZTF24aaozxhx"],
+        notes="UVOT filter comparison, around 24jlf", name="UVOT_cmp_24jlf"
+    )
+    TC.compare_filters(
+        Kowalski=k, filt_a=prod_UVOT, filt_b=latest_UVOT,
+        run_name=f"cmp_{run_t_stamp}"
+    )
+
+
+def __main__():
+    test_UVOT_filter()
 
 
 if __name__ == "__main__":
