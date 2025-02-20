@@ -21,7 +21,7 @@ assert k.ping()
 prod_UVOT_id = 1191
 lab_UVOT_id = 1193
 prod_UVOT = Filter(prod_UVOT_id, "fomkqf", "UVOT")
-latest_UVOT = Filter(lab_UVOT_id, "p7oofv", "UVOT")
+latest_UVOT = Filter(lab_UVOT_id, "gfunuh", "UVOT")
 
 
 def __main__():
@@ -175,20 +175,6 @@ def __main__():
     # Evaluate all TestCases
     TCs = TC_z001 + TC_z0015 + TC_bad_hist + TC_bad_assosciation + TC_no_lims + \
         TC_bogus + TC_loose_lims
-
-    TC_lastnight = [
-        TestCase(
-            60715.0, 60720.0, neg_ids=["ZTF25aafknns"], pos_ids=[],
-            notes="ZTF25aafknns, atop distant galaxy but matched to nearby galaxy",
-            name="bad_host3"
-        ),
-        TestCase(
-            60712.0, 60718.0, neg_ids=["ZTF25aafiibc"], pos_ids=[],
-            notes="ZTF25aafiibc, ~4 days between first alert and last non-det",
-            name="ZTF25aafiibc"
-        )
-    ]
-    TCs = TC_lastnight
 
     print(f"Evaluating {len(TCs)} TestCases")
     statuses = []
