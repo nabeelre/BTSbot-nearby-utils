@@ -18,15 +18,15 @@ k = Kowalski(
 )
 assert k.ping()
 
-prod_SEDM_id = 1174
-test_SEDM_id = 1194
-prod_SEDM = Filter(test_SEDM_id, "d4e8w3", "SEDM")
-lab_SEDM = Filter(test_SEDM_id, "e6921c", "SEDM")
+prod_SEDM_id = 1182
+lab_SEDM_id = 1194
+prod_SEDM = Filter(prod_SEDM_id, "zom8ye", "SEDM")
+lab_SEDM = Filter(lab_SEDM_id, "e6921c", "SEDM")
 
 prod_UVOT_id = 1191
 lab_UVOT_id = 1193
 prod_UVOT = Filter(prod_UVOT_id, "fomkqf", "UVOT")
-latest_UVOT = Filter(lab_UVOT_id, "4sa56j", "UVOT")
+lab_UVOT = Filter(lab_UVOT_id, "4sa56j", "UVOT")
 
 prod_SOAR_id = 1209
 lab_SOAR_id = 1195
@@ -40,7 +40,7 @@ def long_comp(filt_a, filt_b):
     os.makedirs(f"logs/cmp_{run_t_stamp}/")
 
     TC = TestCase(
-        2460527.0, 2460727.0, neg_ids=[], pos_ids=[],
+        2460562.0, 2460727.0, neg_ids=[], pos_ids=[],
         notes="long_cmp", name="long_cmp"
     )
     TC.compare_filters(

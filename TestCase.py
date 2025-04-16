@@ -115,8 +115,7 @@ class TestCase:
                     if (item['annotations']['bts'] >= 0.5) &\
                        (item['annotations']['sgscore1'] >= 0.0) &\
                        (item['annotations']['sgscore2'] >= 0.0) &\
-                       (item['annotations']['programpi'] != "Prince"):
-                        # TODO update autosave filter
+                       (item['annotations'].get('programpi', '') != "Prince"):
                         objids_passed += [item['objectId']]
                 else:
                     objids_passed += [item['objectId']]

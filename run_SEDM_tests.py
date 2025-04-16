@@ -18,21 +18,17 @@ k = Kowalski(
 )
 assert k.ping()
 
-prod_BTSbotnearby = 1174
-streamid_40Mpc = 1191
-streamid_60Mpc = 1194
-streamid_80Mpc = 1195
-
-latest_SEDM = Filter(streamid_60Mpc, "zl40lh", "SEDM")
-
-# TODO write function for running and comparing output of two filters
+prod_SEDM_id = 1182
+lab_SEDM_id = 1194
+latest_SEDM = Filter(lab_SEDM_id, "zl40lh", "SEDM")
+prod_SEDM = Filter(prod_SEDM_id, "zea7xn", "SEDM")
 
 
 def __main__():
     # Create directory for output
     run_t_stamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
     os.makedirs(f"logs/{run_t_stamp}/")
-    curr_filter = latest_SEDM
+    curr_filter = prod_SEDM
 
     # Create TestCases
     TC_z001 = [
@@ -126,7 +122,15 @@ def __main__():
     # ZTF25aaaqfrf TODO - how to avoid deep drilling
 
     # Evaluate all TestCases
-    TCs = TC_z001 + TC_bad_hist + TC_bad_assosciation + TC_no_lims + TC_bogus + TC_loose_lims
+    # TCs = TC_z001 + TC_bad_hist + TC_bad_assosciation + TC_no_lims + TC_bogus + TC_loose_lims
+    TCs = [
+        TestCase(
+            60218.0, 60766.0, neg_ids=[], pos_ids=[],
+            notes="Test for metrics in paper",
+            name="Oct23-Apr25"
+        )
+    ]
+
 
     print(f"Evaluating {len(TCs)} TestCases")
     statuses = []

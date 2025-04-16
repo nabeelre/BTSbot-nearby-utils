@@ -20,7 +20,7 @@ assert k.ping()
 
 prod_UVOT_id = 1191
 lab_UVOT_id = 1193
-prod_UVOT = Filter(prod_UVOT_id, "fomkqf", "UVOT")
+prod_UVOT = Filter(prod_UVOT_id, "anupg3", "UVOT")
 latest_UVOT = Filter(lab_UVOT_id, "gfunuh", "UVOT")
 
 
@@ -28,7 +28,7 @@ def __main__():
     # Create directory for output
     run_t_stamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
     os.makedirs(f"logs/{run_t_stamp}/")
-    curr_filter = latest_UVOT
+    curr_filter = prod_UVOT
 
     # Create TestCases
     TC_z001 = [
@@ -175,6 +175,20 @@ def __main__():
     # Evaluate all TestCases
     TCs = TC_z001 + TC_z0015 + TC_bad_hist + TC_bad_assosciation + TC_no_lims + \
         TC_bogus + TC_loose_lims
+
+    TC_24B = TestCase(
+        60523.0, 60706.0, neg_ids=[], pos_ids=[
+            'ZTF20aacedmi', 'ZTF20abidglx', 'ZTF24aadnhsl', 'ZTF24aaejecr',
+            'ZTF24aaejvcx', 'ZTF24aaemydm', 'ZTF24aaerzgo', 'ZTF24aagpsfh',
+            'ZTF24aahgaov', 'ZTF24aahgqwk', 'ZTF24aahgtjt', 'ZTF24aahiabd',
+            'ZTF24aahnklb', 'ZTF24aahszxf', 'ZTF24aajqamj', 'ZTF24aamlalc',
+            'ZTF24aamtvxb', 'ZTF24aankvcy', 'ZTF24aaozxhx', 'ZTF24aaqaroi',
+            'ZTF24aaqkvyl', 'ZTF24aaqtode', 'ZTF24aarygdq', 'ZTF24aatbpbr',
+            'ZTF24aatytqv', 'ZTF24aaupozr', 'ZTF24aauyikt', 'ZTF24aawrofs'
+        ], notes="2024B", name="2024B"
+    )
+
+    TCs = [TC_24B]
 
     print(f"Evaluating {len(TCs)} TestCases")
     statuses = []
