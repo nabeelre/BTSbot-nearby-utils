@@ -146,15 +146,15 @@ class TestCase:
         failed = False
         for pos_id in self.pos_ids:
             if pos_id not in objids_passed:
-                print(f"FAILED: {pos_id} NOT IN OUTPUT")
+                print(f"\033[1;31mFAILED: {pos_id} NOT IN OUTPUT\033[0m")
                 failed = True
 
         # Check if all negative examples are not in the output
         for neg_id in self.neg_ids:
             if neg_id in objids_passed:
-                print(f"FAILED: {neg_id} IN OUTPUT")
+                print(f"\033[1;31mFAILED: {neg_id} IN OUTPUT\033[0m")
                 failed = True
-        print(f"TestCase {self.name} {'Failed' if failed else 'Passed'}")
+        print(f"\033[1;32mTestCase {self.name} {'Failed' if failed else 'Passed'}\033[0m")
         print()
 
         self.write_output(annotations, objids_passed, filt, run_name, failed)
