@@ -1,531 +1,710 @@
 [
-    {
-      "$match": {
-        "candidate.rb": {
-          "$gt": 0.3
+  {
+    "$match": {
+      "candidate.rb": {
+        "$gt": 0.3
+      },
+      "candidate.drb": {
+        "$gt": 0.8
+      },
+      "candidate.magpsf": {
+        "$lt": 99
+      },
+      "candidate.ndethist": {
+        "$lte": 200
+      },
+      "candidate.nbad": {
+        "$lt": 5
+      },
+      "candidate.fwhm": {
+        "$gt": 0.5,
+        "$lt": 8
+      },
+      "candidate.isdiffpos": {
+        "$in": [
+          1,
+          "1",
+          "t",
+          true,
+          "true",
+          "T",
+          "True"
+        ]
+      },
+      "cross_matches.NED_BetaV3.0": {
+        "$exists": true
+      },
+      "$and": [
+        {
+          "$expr": {
+            "$lt": [
+              {
+                "$abs": {
+                  "$subtract": [
+                    "$candidate.magpsf",
+                    "$candidate.magap"
+                  ]
+                }
+              },
+              0.75
+            ]
+          }
         },
-        "candidate.drb": {
-          "$gt": 0.8
-        },
-        "candidate.magpsf": {
-          "$lt": 99
-        },
-        "candidate.ndethist": {
-          "$lte": 200
-        },
-        "candidate.nbad": {
-          "$lt": 5
-        },
-        "candidate.fwhm": {
-          "$gt": 0.5,
-          "$lt": 8
-        },
-        "candidate.isdiffpos": {
-          "$in": [
-            1,
-            "1",
-            "t",
-            true,
-            "true",
-            "T",
-            "True"
+        {
+          "$or": [
+            {
+              "candidate.sgscore1": {
+                "$lte": 0.76
+              }
+            },
+            {
+              "candidate.distpsnr1": {
+                "$gte": 2
+              }
+            },
+            {
+              "candidate.distpsnr1": {
+                "$lt": 0
+              }
+            }
           ]
         },
-        "cross_matches.NED_BetaV3.0": {
-          "$exists": true
-        },
-        "$and": [
-          {
-            "$expr": {
-              "$lt": [
-                {
-                  "$abs": {
-                    "$subtract": [
-                      "$candidate.magpsf",
-                      "$candidate.magap"
-                    ]
-                  }
-                },
-                0.75
-              ]
+        {
+          "$or": [
+            {
+              "candidate.ssdistnr": {
+                "$lt": 0
+              }
+            },
+            {
+              "candidate.ssdistnr": {
+                "$gte": 12
+              }
+            },
+            {
+              "candidate.ssmagnr": {
+                "$lte": -20
+              }
+            },
+            {
+              "candidate.ssmagnr": {
+                "$gte": 20
+              }
             }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "$addFields": {
+      "age": {
+        "$subtract": [
+          "$candidate.jd",
+          "$candidate.jdstarthist"
+        ]
+      }
+    }
+  },
+  {
+    "$project": {
+      "_id": 0,
+      "age": 1,
+      "objectId": 1,
+      "prv_candidates.jd": 1,
+      "prv_candidates.magpsf": 1,
+      "prv_candidates.fid": 1,
+      "prv_candidates.isdiffpos": 1,
+      "fp_hists.jd": 1,
+      "fp_hists.snr": 1,
+      "fp_hists.procstatus": 1,
+      "drb": "$candidate.drb",
+      "t_now": "$candidate.jd",
+      "m_now": "$candidate.magpsf",
+      "gal_lat": "$coordinates.b",
+      "bts": "$classifications.bts",
+      "bts_version": "$classifications.bts_version",
+      "programpi": "$candidate.programpi",
+      "NED_name": {
+        "$map": {
+          "input": {
+            "$ifNull": [
+              "$cross_matches.NED_BetaV3",
+              []
+            ]
           },
+          "as": "match",
+          "in": "$$match.objname"
+        }
+      },
+      "NED_type": {
+        "$map": {
+          "input": {
+            "$ifNull": [
+              "$cross_matches.NED_BetaV3",
+              []
+            ]
+          },
+          "as": "match",
+          "in": "$$match.objtype"
+        }
+      },
+      "NED_z": {
+        "$map": {
+          "input": {
+            "$ifNull": [
+              "$cross_matches.NED_BetaV3",
+              []
+            ]
+          },
+          "as": "match",
+          "in": "$$match.z"
+        }
+      },
+      "NED_z_tech": {
+        "$map": {
+          "input": {
+            "$ifNull": [
+              "$cross_matches.NED_BetaV3",
+              []
+            ]
+          },
+          "as": "match",
+          "in": "$$match.z_tech"
+        }
+      },
+      "NED_DistMpc": {
+        "$map": {
+          "input": {
+            "$ifNull": [
+              "$cross_matches.NED_BetaV3",
+              []
+            ]
+          },
+          "as": "match",
+          "in": "$$match.DistMpc"
+        }
+      },
+      "NED_DistMpc_unc": {
+        "$map": {
+          "input": {
+            "$ifNull": [
+              "$cross_matches.NED_BetaV3",
+              []
+            ]
+          },
+          "as": "match",
+          "in": "$$match.DistMpc_unc"
+        }
+      },
+      "offset_arcsec": {
+        "$map": {
+          "input": {
+            "$ifNull": [
+              "$cross_matches.NED_BetaV3",
+              []
+            ]
+          },
+          "as": "match",
+          "in": "$$match.coordinates.distance_arcsec"
+        }
+      },
+      "offset_kpc": {
+        "$map": {
+          "input": {
+            "$ifNull": [
+              "$cross_matches.NED_BetaV3",
+              []
+            ]
+          },
+          "as": "match",
+          "in": "$$match.coordinates.distance_kpc"
+        }
+      },
+      "max_offset_arcsec": {
+        "$map": {
+          "input": {
+            "$ifNull": [
+              "$cross_matches.NED_BetaV3",
+              []
+            ]
+          },
+          "as": "match",
+          "in": {
+            "$cond": {
+              "if": {
+                "$gt": [
+                  "$$match.DistMpc",
+                  0
+                ]
+              },
+              "then": {
+                "$min": [
+                  {
+                    "$divide": [
+                      3093.972,
+                      "$$match.DistMpc"
+                    ]
+                  },
+                  120
+                ]
+              },
+              "else": 120
+            }
+          }
+        }
+      },
+      "variablesource": {
+        "$or": [
           {
-            "$or": [
+            "$and": [
               {
-                "candidate.sgscore1": {
-                  "$lte": 0.76
-                }
+                "$lt": [
+                  "$candidate.distnr",
+                  0.4
+                ]
               },
               {
-                "candidate.distpsnr1": {
-                  "$gte": 2
-                }
+                "$lt": [
+                  "$candidate.magnr",
+                  19
+                ]
               },
               {
-                "candidate.distpsnr1": {
-                  "$lt": 0
-                }
+                "$gt": [
+                  "$age",
+                  90
+                ]
               }
             ]
           },
           {
-            "$or": [
+            "$and": [
               {
-                "candidate.ssdistnr": {
-                  "$lt": 0
-                }
+                "$lt": [
+                  "$candidate.distnr",
+                  0.8
+                ]
               },
               {
-                "candidate.ssdistnr": {
-                  "$gte": 12
-                }
+                "$lt": [
+                  "$candidate.magnr",
+                  17
+                ]
               },
               {
-                "candidate.ssmagnr": {
-                  "$lte": -20
-                }
+                "$gt": [
+                  "$age",
+                  90
+                ]
+              }
+            ]
+          },
+          {
+            "$and": [
+              {
+                "$lt": [
+                  "$candidate.distnr",
+                  1.2
+                ]
               },
               {
-                "candidate.ssmagnr": {
-                  "$gte": 20
-                }
+                "$lt": [
+                  "$candidate.magnr",
+                  15
+                ]
+              },
+              {
+                "$gt": [
+                  "$age",
+                  90
+                ]
               }
             ]
           }
         ]
-      }
-    },
-    {
-      "$addFields": {
-        "age": {
-          "$subtract": [
-            "$candidate.jd",
-            "$candidate.jdstarthist"
-          ]
-        }
-      }
-    },
-    {
-      "$project": {
-        "_id": 0,
-        "age": 1,
-        "objectId": 1,
-        "prv_candidates.jd": 1,
-        "prv_candidates.magpsf": 1,
-        "prv_candidates.fid": 1,
-        "prv_candidates.isdiffpos": 1,
-        "fp_hists.jd": 1,
-        "fp_hists.snr": 1,
-        "fp_hists.procstatus": 1,
-        "drb": "$candidate.drb",
-        "t_now": "$candidate.jd",
-        "m_now": "$candidate.magpsf",
-        "bts": "$classifications.bts",
-        "bts_version": "$classifications.bts_version",
-        "programpi": "$candidate.programpi",
-        "NED_name": {
-          "$map": {
-            "input": {
-              "$ifNull": [
-                "$cross_matches.NED_BetaV3",
-                []
-              ]
-            },
-            "as": "match",
-            "in": "$$match.objname"
+      },
+      "brightstar": {
+        "$or": [
+          {
+            "$and": [
+              {
+                "$lt": [
+                  "$candidate.distpsnr1",
+                  20
+                ]
+              },
+              {
+                "$lt": [
+                  "$candidate.srmag1",
+                  15
+                ]
+              },
+              {
+                "$gt": [
+                  "$candidate.srmag1",
+                  0
+                ]
+              },
+              {
+                "$gt": [
+                  "$candidate.sgscore1",
+                  0.49
+                ]
+              }
+            ]
+          },
+          {
+            "$and": [
+              {
+                "$lt": [
+                  "$candidate.distpsnr2",
+                  20
+                ]
+              },
+              {
+                "$lt": [
+                  "$candidate.srmag2",
+                  15
+                ]
+              },
+              {
+                "$gt": [
+                  "$candidate.srmag2",
+                  0
+                ]
+              },
+              {
+                "$gt": [
+                  "$candidate.sgscore2",
+                  0.49
+                ]
+              }
+            ]
+          },
+          {
+            "$and": [
+              {
+                "$lt": [
+                  "$candidate.distpsnr3",
+                  20
+                ]
+              },
+              {
+                "$lt": [
+                  "$candidate.srmag3",
+                  15
+                ]
+              },
+              {
+                "$gt": [
+                  "$candidate.srmag3",
+                  0
+                ]
+              },
+              {
+                "$gt": [
+                  "$candidate.sgscore3",
+                  0.49
+                ]
+              }
+            ]
+          },
+          {
+            "$and": [
+              {
+                "$eq": [
+                  "$candidate.sgscore1",
+                  0.5
+                ]
+              },
+              {
+                "$lt": [
+                  "$candidate.distpsnr1",
+                  0.5
+                ]
+              },
+              {
+                "$or": [
+                  {
+                    "$lt": [
+                      {
+                        "$abs": "$candidate.sgmag1"
+                      },
+                      17
+                    ]
+                  },
+                  {
+                    "$lt": [
+                      {
+                        "$abs": "$candidate.srmag1"
+                      },
+                      17
+                    ]
+                  },
+                  {
+                    "$lt": [
+                      {
+                        "$abs": "$candidate.simag1"
+                      },
+                      17
+                    ]
+                  }
+                ]
+              }
+            ]
           }
-        },
-        "NED_type": {
-          "$map": {
-            "input": {
-              "$ifNull": [
-                "$cross_matches.NED_BetaV3",
-                []
+        ]
+      },
+      "sgscore1": "$candidate.sgscore1",
+      "sgscore2": "$candidate.sgscore2",
+      "isdiffpos": "$candidate.isdiffpos",
+      "NED_matches": "$cross_matches.NED_BetaV3"
+    }
+  },
+  {
+    "$addFields": {
+      "galaxy_matches": {
+        "$filter": {
+          "input": {
+            "$zip": {
+              "inputs": [
+                "$NED_matches",
+                "$max_offset_arcsec"
               ]
-            },
-            "as": "match",
-            "in": "$$match.objtype"
-          }
-        },
-        "NED_z": {
-          "$map": {
-            "input": {
-              "$ifNull": [
-                "$cross_matches.NED_BetaV3",
-                []
-              ]
-            },
-            "as": "match",
-            "in": "$$match.z"
-          }
-        },
-        "NED_z_tech": {
-          "$map": {
-            "input": {
-              "$ifNull": [
-                "$cross_matches.NED_BetaV3",
-                []
-              ]
-            },
-            "as": "match",
-            "in": "$$match.z_tech"
-          }
-        },
-        "NED_DistMpc": {
-          "$map": {
-            "input": {
-              "$ifNull": [
-                "$cross_matches.NED_BetaV3",
-                []
-              ]
-            },
-            "as": "match",
-            "in": "$$match.DistMpc"
-          }
-        },
-        "NED_DistMpc_unc": {
-          "$map": {
-            "input": {
-              "$ifNull": [
-                "$cross_matches.NED_BetaV3",
-                []
-              ]
-            },
-            "as": "match",
-            "in": "$$match.DistMpc_unc"
-          }
-        },
-        "offset_arcsec": {
-          "$map": {
-            "input": {
-              "$ifNull": [
-                "$cross_matches.NED_BetaV3",
-                []
-              ]
-            },
-            "as": "match",
-            "in": "$$match.coordinates.distance_arcsec"
-          }
-        },
-        "offset_kpc": {
-          "$map": {
-            "input": {
-              "$ifNull": [
-                "$cross_matches.NED_BetaV3",
-                []
-              ]
-            },
-            "as": "match",
-            "in": "$$match.coordinates.distance_kpc"
-          }
-        },
-        "max_offset_arcsec": {
-          "$map": {
-            "input": {
-              "$ifNull": [
-                "$cross_matches.NED_BetaV3",
-                []
-              ]
-            },
-            "as": "match",
-            "in": {
-              "$cond": {
-                "if": {
-                  "$gt": [
-                    "$$match.DistMpc",
+            }
+          },
+          "as": "pair",
+          "cond": {
+            "$let": {
+              "vars": {
+                "galaxy": {
+                  "$arrayElemAt": [
+                    "$$pair",
                     0
                   ]
                 },
-                "then": {
-                  "$min": [
-                    {
-                      "$divide": [
-                        3093.972,
-                        "$$match.DistMpc"
-                      ]
-                    },
-                    120
+                "max_galaxy_offset": {
+                  "$arrayElemAt": [
+                    "$$pair",
+                    1
                   ]
-                },
-                "else": 120
+                }
+              },
+              "in": {
+                "$and": [
+                  {
+                    "$lt": [
+                      "$$galaxy.DistMpc",
+                      60
+                    ]
+                  },
+                  {
+                    "$gte": [
+                      "$$galaxy.DistMpc",
+                      0
+                    ]
+                  },
+                  {
+                    "$lte": [
+                      "$$galaxy.z",
+                      0.014
+                    ]
+                  },
+                  {
+                    "$ne": [
+                      "$$galaxy.z",
+                      0
+                    ]
+                  },
+                  {
+                    "$lt": [
+                      "$$galaxy.coordinates.distance_arcsec",
+                      "$$max_galaxy_offset"
+                    ]
+                  },
+                  {
+                    "$gt": [
+                      "$$galaxy.coordinates.distance_arcsec",
+                      2.0
+                    ]
+                  },
+                  {
+                    "$ne": [
+                      "$$galaxy.z_tech",
+                      "PHOT"
+                    ]
+                  },
+                  {
+                    "$ne": [
+                      "$$galaxy.objtype",
+                      "*"
+                    ]
+                  }
+                ]
               }
             }
           }
-        },
-        "variablesource": {
-          "$or": [
-            {
+        }
+      }
+    }
+  },
+  {
+    "$match": {
+      "variablesource": false,
+      "brightstar": false,
+      "galaxy_matches": {
+        "$ne": []
+      }
+    }
+  },
+  {
+    "$project": {
+      "objectId": 1,
+      "age": 1,
+      "gal_lat": 1,
+      "bts": 1,
+      "drb": 1,
+      "m_now": 1,
+      "latitude": {
+        "$gte": [
+          {
+            "$abs": "$gal_lat"
+          },
+          7
+        ]
+      },
+      "stationary": {
+        "$anyElementTrue": {
+          "$map": {
+            "input": "$prv_candidates",
+            "as": "cand",
+            "in": {
               "$and": [
                 {
-                  "$lt": [
-                    "$candidate.distnr",
-                    0.4
-                  ]
-                },
-                {
-                  "$lt": [
-                    "$candidate.magnr",
-                    19
-                  ]
-                },
-                {
                   "$gt": [
-                    "$age",
-                    90
-                  ]
-                }
-              ]
-            },
-            {
-              "$and": [
-                {
-                  "$lt": [
-                    "$candidate.distnr",
-                    0.8
+                    {
+                      "$abs": {
+                        "$subtract": [
+                          "$t_now",
+                          "$$cand.jd"
+                        ]
+                      }
+                    },
+                    0.007
                   ]
                 },
                 {
                   "$lt": [
-                    "$candidate.magnr",
-                    17
-                  ]
-                },
-                {
-                  "$gt": [
-                    "$age",
-                    90
-                  ]
-                }
-              ]
-            },
-            {
-              "$and": [
-                {
-                  "$lt": [
-                    "$candidate.distnr",
-                    1.2
+                    {
+                      "$abs": {
+                        "$subtract": [
+                          "$t_now",
+                          "$$cand.jd"
+                        ]
+                      }
+                    },
+                    2.5
                   ]
                 },
                 {
                   "$lt": [
-                    "$candidate.magnr",
-                    15
+                    "$$cand.magpsf",
+                    99
                   ]
                 },
                 {
-                  "$gt": [
-                    "$age",
-                    90
-                  ]
-                }
-              ]
-            }
-          ]
-        },
-        "brightstar": {
-          "$or": [
-            {
-              "$and": [
-                {
-                  "$lt": [
-                    "$candidate.distpsnr1",
-                    20
-                  ]
-                },
-                {
-                  "$lt": [
-                    "$candidate.srmag1",
-                    15
-                  ]
-                },
-                {
-                  "$gt": [
-                    "$candidate.srmag1",
-                    0
-                  ]
-                },
-                {
-                  "$gt": [
-                    "$candidate.sgscore1",
-                    0.49
-                  ]
-                }
-              ]
-            },
-            {
-              "$and": [
-                {
-                  "$lt": [
-                    "$candidate.distpsnr2",
-                    20
-                  ]
-                },
-                {
-                  "$lt": [
-                    "$candidate.srmag2",
-                    15
-                  ]
-                },
-                {
-                  "$gt": [
-                    "$candidate.srmag2",
-                    0
-                  ]
-                },
-                {
-                  "$gt": [
-                    "$candidate.sgscore2",
-                    0.49
-                  ]
-                }
-              ]
-            },
-            {
-              "$and": [
-                {
-                  "$lt": [
-                    "$candidate.distpsnr3",
-                    20
-                  ]
-                },
-                {
-                  "$lt": [
-                    "$candidate.srmag3",
-                    15
-                  ]
-                },
-                {
-                  "$gt": [
-                    "$candidate.srmag3",
-                    0
-                  ]
-                },
-                {
-                  "$gt": [
-                    "$candidate.sgscore3",
-                    0.49
-                  ]
-                }
-              ]
-            },
-            {
-              "$and": [
-                {
-                  "$eq": [
-                    "$candidate.sgscore1",
-                    0.5
-                  ]
-                },
-                {
-                  "$lt": [
-                    "$candidate.distpsnr1",
-                    0.5
+                  "$in": [
+                    "$$cand.isdiffpos",
+                    [
+                      1,
+                      "1",
+                      true,
+                      "t"
+                    ]
                   ]
                 },
                 {
                   "$or": [
                     {
                       "$lt": [
-                        {
-                          "$abs": "$candidate.sgmag1"
-                        },
-                        17
+                        "$ssdistnr",
+                        -0.5
                       ]
                     },
                     {
-                      "$lt": [
-                        {
-                          "$abs": "$candidate.srmag1"
-                        },
-                        17
-                      ]
-                    },
-                    {
-                      "$lt": [
-                        {
-                          "$abs": "$candidate.simag1"
-                        },
-                        17
+                      "$gt": [
+                        "$ssdistnr",
+                        2
                       ]
                     }
                   ]
                 }
               ]
             }
-          ]
-        },
-        "sgscore1": "$candidate.sgscore1",
-        "sgscore2": "$candidate.sgscore2",
-        "isdiffpos": "$candidate.isdiffpos",
-        "NED_matches": "$cross_matches.NED_BetaV3"
-      }
-    },
-    {
-      "$addFields": {
-        "galaxy_matches": {
-          "$filter": {
-            "input": {
-              "$zip": {
-                "inputs": [
-                  "$NED_matches",
-                  "$max_offset_arcsec"
-                ]
-              }
-            },
-            "as": "pair",
-            "cond": {
-              "$let": {
-                "vars": {
-                  "galaxy": {
-                    "$arrayElemAt": [
-                      "$$pair",
-                      0
-                    ]
-                  },
-                  "max_galaxy_offset": {
-                    "$arrayElemAt": [
-                      "$$pair",
-                      1
-                    ]
-                  }
-                },
+          }
+        }
+      },
+      "stationary_fp": {
+        "$cond": {
+          "if": {
+            "$eq": [
+              {
+                "$type": "$fp_hists"
+              },
+              "missing"
+            ]
+          },
+          "then": false,
+          "else": {
+            "$anyElementTrue": {
+              "$map": {
+                "input": "$fp_hists",
+                "as": "cand",
                 "in": {
                   "$and": [
                     {
+                      "$gt": [
+                        {
+                          "$abs": {
+                            "$subtract": [
+                              "$t_now",
+                              "$$cand.jd"
+                            ]
+                          }
+                        },
+                        0.015
+                      ]
+                    },
+                    {
                       "$lt": [
-                        "$$galaxy.DistMpc",
-                        60
+                        {
+                          "$abs": {
+                            "$subtract": [
+                              "$t_now",
+                              "$$cand.jd"
+                            ]
+                          }
+                        },
+                        2.5
                       ]
                     },
                     {
                       "$gte": [
-                        "$$galaxy.DistMpc",
-                        0
-                      ]
-                    },
-                    {
-                      "$lte": [
-                        "$$galaxy.z",
-                        0.014
+                        "$$cand.snr",
+                        4
                       ]
                     },
                     {
                       "$lt": [
-                        "$$galaxy.coordinates.distance_arcsec",
-                        "$$max_galaxy_offset"
+                        "$$cand.snr",
+                        100
                       ]
                     },
                     {
-                      "$ne": [
-                        "$$galaxy.z_tech",
-                        "PHOT"
-                      ]
-                    },
-                    {
-                      "$ne": [
-                        "$$galaxy.objtype",
-                        "*"
+                      "$eq": [
+                        "$$cand.procstatus",
+                        "0"
                       ]
                     }
                   ]
@@ -534,264 +713,38 @@
             }
           }
         }
-      }
-    },
-    {
-      "$match": {
-        "variablesource": false,
-        "brightstar": false,
-        "galaxy_matches": {
-          "$ne": []
-        }
-      }
-    },
-    {
-      "$project": {
-        "objectId": 1,
-        "age": 1,
-        "bts": 1,
-        "drb": 1,
-        "m_now": 1,
-        "stationary": {
-          "$anyElementTrue": {
-            "$map": {
-              "input": "$prv_candidates",
-              "as": "cand",
-              "in": {
-                "$and": [
-                  {
-                    "$gt": [
-                      {
-                        "$abs": {
-                          "$subtract": [
-                            "$t_now",
-                            "$$cand.jd"
-                          ]
-                        }
-                      },
-                      0.007
-                    ]
-                  },
-                  {
-                    "$lt": [
-                      {
-                        "$abs": {
-                          "$subtract": [
-                            "$t_now",
-                            "$$cand.jd"
-                          ]
-                        }
-                      },
-                      2.5
-                    ]
-                  },
-                  {
-                    "$lt": [
-                      "$$cand.magpsf",
-                      99
-                    ]
-                  },
-                  {
-                    "$in": [
-                      "$$cand.isdiffpos",
-                      [
-                        1,
-                        "1",
-                        true,
-                        "t"
-                      ]
-                    ]
-                  },
-                  {
-                    "$or": [
-                      {
-                        "$lt": [
-                          "$ssdistnr",
-                          -0.5
-                        ]
-                      },
-                      {
-                        "$gt": [
-                          "$ssdistnr",
-                          2
-                        ]
-                      }
-                    ]
-                  }
-                ]
-              }
-            }
-          }
-        },
-        "stationary_fp": {
-          "$cond": {
-            "if": {
-              "$eq": [
-                {
-                  "$type": "$fp_hists"
-                },
-                "missing"
-              ]
-            },
-            "then": false,
-            "else": {
-              "$anyElementTrue": {
-                "$map": {
-                  "input": "$fp_hists",
-                  "as": "cand",
-                  "in": {
-                    "$and": [
-                      {
-                        "$gt": [
-                          {
-                            "$abs": {
-                              "$subtract": [
-                                "$t_now",
-                                "$$cand.jd"
-                              ]
-                            }
-                          },
-                          0.015
-                        ]
-                      },
-                      {
-                        "$lt": [
-                          {
-                            "$abs": {
-                              "$subtract": [
-                                "$t_now",
-                                "$$cand.jd"
-                              ]
-                            }
-                          },
-                          2.5
-                        ]
-                      },
-                      {
-                        "$gte": [
-                          "$$cand.snr",
-                          4
-                        ]
-                      },
-                      {
-                        "$lt": [
-                          "$$cand.snr",
-                          100
-                        ]
-                      },
-                      {
-                        "$eq": [
-                          "$$cand.procstatus",
-                          "0"
-                        ]
-                      }
-                    ]
-                  }
-                }
-              }
-            }
-          }
-        },
-        "recent_limit": {
-          "$anyElementTrue": {
-            "$map": {
-              "input": "$prv_candidates",
-              "as": "cand",
-              "in": {
-                "$and": [
-                  {
-                    "$lt": [
-                      {
-                        "$abs": {
-                          "$subtract": [
-                            "$t_now",
-                            "$$cand.jd"
-                          ]
-                        }
-                      },
-                      3.5
-                    ]
-                  },
-                  {
-                    "$or": [
-                      {
-                        "$lt": [
-                          "$$cand.magpsf",
-                          0
-                        ]
-                      },
-                      {
-                        "$not": {
-                          "$isNumber": "$$cand.magpsf"
-                        }
-                      }
-                    ]
-                  }
-                ]
-              }
-            }
-          }
-        },
-        "MPC_match": {
-          "$anyElementTrue": {
-            "$map": {
-              "input": "$prv_candidates",
-              "as": "cand",
-              "in": {
-                "$and": [
-                  {
-                    "$gte": [
-                      "$ssdistnr",
-                      0
-                    ]
-                  },
-                  {
-                    "$lt": [
-                      "$ssdistnr",
-                      2
-                    ]
-                  }
-                ]
-              }
-            }
-          }
-        },
-        "NED_name": 1,
-        "NED_type": 1,
-        "NED_z": 1,
-        "NED_z_tech": 1,
-        "NED_DistMpc": 1,
-        "NED_DistMpc_unc": 1,
-        "offset_arcsec": 1,
-        "offset_kpc": 1,
-        "galaxy_matches": 1,
-        "abs_magpsf": {
+      },
+      "recent_limit": {
+        "$anyElementTrue": {
           "$map": {
-            "input": "$NED_DistMpc",
-            "as": "dist",
+            "input": "$prv_candidates",
+            "as": "cand",
             "in": {
-              "$subtract": [
-                "$m_now",
+              "$and": [
                 {
-                  "$multiply": [
-                    5,
+                  "$lt": [
                     {
-                      "$log10": {
-                        "$cond": {
-                          "if": {
-                            "$gt": [
-                              "$$dist",
-                              0
-                            ]
-                          },
-                          "then": {
-                            "$multiply": [
-                              "$$dist",
-                              100000
-                            ]
-                          },
-                          "else": 500000
-                        }
+                      "$abs": {
+                        "$subtract": [
+                          "$t_now",
+                          "$$cand.jd"
+                        ]
+                      }
+                    },
+                    3.5
+                  ]
+                },
+                {
+                  "$or": [
+                    {
+                      "$lt": [
+                        "$$cand.magpsf",
+                        0
+                      ]
+                    },
+                    {
+                      "$not": {
+                        "$isNumber": "$$cand.magpsf"
                       }
                     }
                   ]
@@ -799,101 +752,171 @@
               ]
             }
           }
-        },
-        "sgscore1": 1,
-        "sgscore2": 1,
-        "max_offset_arcsec": 1,
-        "programpi": 1
-      }
-    },
-    {
-      "$addFields": {
-        "has_valid_abs_magpsf": {
-          "$anyElementTrue": {
-            "$map": {
-              "input": "$abs_magpsf",
-              "as": "absmag",
-              "in": {
-                "$lt": [
-                  "$$absmag",
-                  -11
-                ]
-              }
+        }
+      },
+      "MPC_match": {
+        "$anyElementTrue": {
+          "$map": {
+            "input": "$prv_candidates",
+            "as": "cand",
+            "in": {
+              "$and": [
+                {
+                  "$gte": [
+                    "$ssdistnr",
+                    0
+                  ]
+                },
+                {
+                  "$lt": [
+                    "$ssdistnr",
+                    2
+                  ]
+                }
+              ]
             }
           }
         }
-      }
-    },
-    {
-      "$match": {
-        "stationary": true,
-        "has_valid_abs_magpsf": true,
-        "recent_limit": true,
-        "MPC_match": false
-      }
-    },
-    {
-      "$project": {
-        "objectId": 1,
-        "age": 1,
-        "bts": 1,
-        "drb": 1,
-        "NED_name": 1,
-        "NED_type": 1,
-        "NED_z": 1,
-        "NED_z_tech": 1,
-        "NED_DistMpc": 1,
-        "NED_DistMpc_unc": 1,
-        "offset_arcsec": 1,
-        "offset_kpc": 1,
-        "galaxy_matches": 1,
-        "abs_magpsf": 1,
-        "m_now": 1,
-        "sgscore1": 1,
-        "sgscore2": 1,
-        "bts_version": 1,
-        "max_offset_arcsec": 1,
-        "stationary_fp": 1,
-        "ssdistnr": 1,
-        "recent_limit": 1,
-        "MPC_match": 1,
-        "programpi": 1
-      }
-    },
-    {
-      "$project": {
-        "objectId": 1,
-        "annotations.bts": {
-          "$round": [
-            "$bts",
-            5
-          ]
-        },
-        "annotations.drb": {
-          "$round": [
-            "$drb",
-            5
-          ]
-        },
-        "annotations.NED_DistMpc": "$NED_DistMpc",
-        "annotations.NED_DistMpc_unc": "$NED_DistMpc_unc",
-        "annotations.offset_kpc": "$offset_kpc",
-        "annotations.absmag": "$abs_magpsf",
-        "annotations.age": "$age",
-        "annotations.NED_name": "$NED_name",
-        "annotations.NED_type": "$NED_type",
-        "annotations.NED_z": "$NED_z",
-        "annotations.NED_z_tech": "$NED_z_tech",
-        "annotations.offset_arcsec": "$offset_arcsec",
-        "annotations.max_offset_arcsec": "$max_offset_arcsec",
-        "annotations.stationary_fp": "$stationary_fp",
-        "annotations.ssdistnr": "$ssdistnr",
-        "annotations.recent_limt": "$recent_limit",
-        "annotations.MPC_match": "$MPC_match",
-        "annotations.m_now": "$m_now",
-        "annotations.sgscore1": "$sgscore1",
-        "annotations.sgscore2": "$sgscore2",
-        "annotations.programpi": "$programpi"
+      },
+      "NED_name": 1,
+      "NED_type": 1,
+      "NED_z": 1,
+      "NED_z_tech": 1,
+      "NED_DistMpc": 1,
+      "NED_DistMpc_unc": 1,
+      "offset_arcsec": 1,
+      "offset_kpc": 1,
+      "galaxy_matches": 1,
+      "abs_magpsf": {
+        "$map": {
+          "input": "$NED_DistMpc",
+          "as": "dist",
+          "in": {
+            "$subtract": [
+              "$m_now",
+              {
+                "$multiply": [
+                  5,
+                  {
+                    "$log10": {
+                      "$cond": {
+                        "if": {
+                          "$gt": [
+                            "$$dist",
+                            0
+                          ]
+                        },
+                        "then": {
+                          "$multiply": [
+                            "$$dist",
+                            100000
+                          ]
+                        },
+                        "else": 500000
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "sgscore1": 1,
+      "sgscore2": 1,
+      "max_offset_arcsec": 1,
+      "programpi": 1
+    }
+  },
+  {
+    "$addFields": {
+      "has_valid_abs_magpsf": {
+        "$anyElementTrue": {
+          "$map": {
+            "input": "$abs_magpsf",
+            "as": "absmag",
+            "in": {
+              "$lt": [
+                "$$absmag",
+                -11
+              ]
+            }
+          }
+        }
       }
     }
-  ]
+  },
+  {
+    "$match": {
+      "latitude": true,
+      "stationary": true,
+      "has_valid_abs_magpsf": true,
+      "recent_limit": true,
+      "MPC_match": false
+    }
+  },
+  {
+    "$project": {
+      "objectId": 1,
+      "age": 1,
+      "bts": 1,
+      "drb": 1,
+      "NED_name": 1,
+      "NED_type": 1,
+      "NED_z": 1,
+      "NED_z_tech": 1,
+      "NED_DistMpc": 1,
+      "NED_DistMpc_unc": 1,
+      "offset_arcsec": 1,
+      "offset_kpc": 1,
+      "galaxy_matches": 1,
+      "abs_magpsf": 1,
+      "m_now": 1,
+      "sgscore1": 1,
+      "sgscore2": 1,
+      "bts_version": 1,
+      "max_offset_arcsec": 1,
+      "stationary_fp": 1,
+      "ssdistnr": 1,
+      "recent_limit": 1,
+      "MPC_match": 1,
+      "programpi": 1
+    }
+  },
+  {
+    "$project": {
+      "objectId": 1,
+      "annotations.bts": {
+        "$round": [
+          "$bts",
+          5
+        ]
+      },
+      "annotations.drb": {
+        "$round": [
+          "$drb",
+          5
+        ]
+      },
+      "annotations.NED_DistMpc": "$NED_DistMpc",
+      "annotations.NED_DistMpc_unc": "$NED_DistMpc_unc",
+      "annotations.offset_kpc": "$offset_kpc",
+      "annotations.absmag": "$abs_magpsf",
+      "annotations.age": "$age",
+      "annotations.NED_name": "$NED_name",
+      "annotations.NED_type": "$NED_type",
+      "annotations.NED_z": "$NED_z",
+      "annotations.NED_z_tech": "$NED_z_tech",
+      "annotations.offset_arcsec": "$offset_arcsec",
+      "annotations.max_offset_arcsec": "$max_offset_arcsec",
+      "annotations.stationary_fp": "$stationary_fp",
+      "annotations.ssdistnr": "$ssdistnr",
+      "annotations.recent_limt": "$recent_limit",
+      "annotations.MPC_match": "$MPC_match",
+      "annotations.m_now": "$m_now",
+      "annotations.sgscore1": "$sgscore1",
+      "annotations.sgscore2": "$sgscore2",
+      "annotations.programpi": "$programpi"
+    }
+  }
+]
