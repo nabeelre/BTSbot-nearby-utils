@@ -103,6 +103,41 @@
           "$candidate.jd",
           "$candidate.jdstarthist"
         ]
+      },
+      "abs_magpsf": {
+        "$map": {
+          "input": "$cross_matches.NED_BetaV3.DistMpc",
+          "as": "dist",
+          "in": {
+            "$subtract": [
+              "$candidate.magpsf",
+              {
+                "$multiply": [
+                  5,
+                  {
+                    "$log10": {
+                      "$cond": {
+                        "if": {
+                          "$gt": [
+                            "$$dist",
+                            0
+                          ]
+                        },
+                        "then": {
+                          "$multiply": [
+                            "$$dist",
+                            100000
+                          ]
+                        },
+                        "else": 500000
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
       }
     }
   },
@@ -459,7 +494,14 @@
       "sgscore1": "$candidate.sgscore1",
       "sgscore2": "$candidate.sgscore2",
       "isdiffpos": "$candidate.isdiffpos",
-      "NED_matches": "$cross_matches.NED_BetaV3"
+      "NED_matches": "$cross_matches.NED_BetaV3",
+      "abs_magpsf": 1
+    }
+  },
+  {
+    "$match": {
+      "variablesource": false,
+      "brightstar": false
     }
   },
   {
@@ -469,25 +511,32 @@
           "input": {
             "$zip": {
               "inputs": [
-                "$NED_matches",
-                "$max_offset_arcsec"
+                { "$ifNull": ["$NED_matches", []] },
+                { "$ifNull": ["$max_offset_arcsec", []] },
+                { "$ifNull": ["$abs_magpsf", []] }
               ]
             }
           },
-          "as": "pair",
+          "as": "tuple",
           "cond": {
             "$let": {
               "vars": {
                 "galaxy": {
                   "$arrayElemAt": [
-                    "$$pair",
+                    "$$tuple",
                     0
                   ]
                 },
                 "max_galaxy_offset": {
                   "$arrayElemAt": [
-                    "$$pair",
+                    "$$tuple",
                     1
+                  ]
+                },
+                "abs_magpsf": {
+                  "$arrayElemAt": [
+                    "$$tuple",
+                    2
                   ]
                 }
               },
@@ -540,21 +589,18 @@
                       "$$galaxy.objtype",
                       "*"
                     ]
+                  },
+                  {
+                    "$lt": [
+                      "$$abs_magpsf",
+                      -11
+                    ]
                   }
                 ]
               }
             }
           }
         }
-      }
-    }
-  },
-  {
-    "$match": {
-      "variablesource": false,
-      "brightstar": false,
-      "galaxy_matches": {
-        "$ne": []
       }
     }
   },
@@ -787,72 +833,22 @@
       "offset_arcsec": 1,
       "offset_kpc": 1,
       "galaxy_matches": 1,
-      "abs_magpsf": {
-        "$map": {
-          "input": "$NED_DistMpc",
-          "as": "dist",
-          "in": {
-            "$subtract": [
-              "$m_now",
-              {
-                "$multiply": [
-                  5,
-                  {
-                    "$log10": {
-                      "$cond": {
-                        "if": {
-                          "$gt": [
-                            "$$dist",
-                            0
-                          ]
-                        },
-                        "then": {
-                          "$multiply": [
-                            "$$dist",
-                            100000
-                          ]
-                        },
-                        "else": 500000
-                      }
-                    }
-                  }
-                ]
-              }
-            ]
-          }
-        }
-      },
       "sgscore1": 1,
       "sgscore2": 1,
       "max_offset_arcsec": 1,
-      "programpi": 1
-    }
-  },
-  {
-    "$addFields": {
-      "has_valid_abs_magpsf": {
-        "$anyElementTrue": {
-          "$map": {
-            "input": "$abs_magpsf",
-            "as": "absmag",
-            "in": {
-              "$lt": [
-                "$$absmag",
-                -11
-              ]
-            }
-          }
-        }
-      }
+      "programpi": 1,
+      "abs_magpsf": 1
     }
   },
   {
     "$match": {
       "latitude": true,
       "stationary": true,
-      "has_valid_abs_magpsf": true,
       "recent_limit": true,
-      "MPC_match": false
+      "MPC_match": false,
+      "galaxy_matches.0": {
+        "$exists": true
+      }
     }
   },
   {
