@@ -44,8 +44,13 @@ class TestCase:
             output_name = self.name
 
         # Write annotations to disk
-        with open(f'logs/{run_name}/{output_name}_annotations.json', 'w') as f:
-            json.dump(annotations, f, indent=2)
+        try:
+            with open(f'logs/{run_name}/{output_name}_annotations.json', 'w') as f:
+                json.dump(annotations, f, indent=2)
+        except Exception as e:
+            print(f"Error writing annotations to disk: {e}")
+            print(f"Annotations: {annotations}")
+            return
 
         # Write list of ZTFIDs to disk
         with open(f'logs/{run_name}/{output_name}_objids.txt', 'w') as f:
@@ -154,7 +159,11 @@ class TestCase:
             if neg_id in objids_passed:
                 print(f"\033[1;31mFAILED: {neg_id} IN OUTPUT\033[0m")
                 failed = True
-        print(f"\033[1;32mTestCase {self.name} {'Failed' if failed else 'Passed'}\033[0m")
+
+        if failed:
+            print(f"\033[1;31mTestCase {self.name} FAILED\033[0m")
+        else:
+            print(f"\033[1;32mTestCase {self.name} PASSED\033[0m")
         print()
 
         self.write_output(annotations, objids_passed, filt, run_name, failed)
