@@ -19,9 +19,10 @@ k = Kowalski(
 assert k.ping()
 
 prod_UVOT_id = 1191
+prod_UVOT = Filter(prod_UVOT_id, "vgry4w", "UVOT")
+
 lab_UVOT_id = 1193
-prod_UVOT = Filter(prod_UVOT_id, "anupg3", "UVOT")
-latest_UVOT = Filter(lab_UVOT_id, "gfunuh", "UVOT")
+lab_UVOT = Filter(lab_UVOT_id, "gfunuh", "UVOT")
 
 
 def __main__():
@@ -50,15 +51,11 @@ def __main__():
             notes="ZTF25aabxywm", name="ZTF25aabxywm"
         ),
         TestCase(
-            60633.0, 60636.0, neg_ids=[], pos_ids=["ZTF24abtczty"],
-            notes="ZTF24abtczty, low BTSbot score", name="ZTF24abtczty"
-        ),
-        TestCase(
             60591.0, 60593.0, neg_ids=[], pos_ids=["ZTF24ablleoq"],
             notes="ZTF24ablleoq", name="ZTF24ablleoq"
         ),
         TestCase(
-            60438.0, 60442.0, neg_ids=[], pos_ids=["ZTF24aamtvxb"],
+            60438.0, 60444.0, neg_ids=[], pos_ids=["ZTF24aamtvxb"],
             notes="ZTF24aamtvxb", name="ZTF24aamtvxb"
         )
     ]
@@ -109,20 +106,24 @@ def __main__():
             notes="ZTF24aaupozr", name="no_lims2"
         ),
         TestCase(
+            60633.0, 60636.0, neg_ids=["ZTF24abtczty"], pos_ids=[],
+            notes="ZTF24abtczty, low BTSbot score, no lims", name="no_lims3"
+        ),
+        TestCase(
             60670.0, 60680.0, neg_ids=["ZTF24acaccrk"], pos_ids=[],
             notes="ZTF24acaccrk, no lims and also no early ZTF coverage",
-            name="no_lims2"
+            name="no_lims4"
         )
     ]
 
     TC_bogus = [
         TestCase(
             60620.0, 60624.0, neg_ids=["ZTF24abrhrue"], pos_ids=[],
-            notes="ZTF24abrhrue", name="bogus1"
+            notes="ZTF24abrhrue, nuclear bogus", name="bogus1"
         ),
         TestCase(
             60675.0, 60690.0, neg_ids=["ZTF22aacffrr"], pos_ids=[],
-            notes="ZTF22aacffrr, one alert with high drb, medium bts", name="bogus2"
+            notes="ZTF22aacffrr, one alert with high drb, medium bts, nuclear", name="bogus2"
         ),
         TestCase(
             60676.0, 60682.0, neg_ids=["ZTF25aaastwn"], pos_ids=[],
@@ -130,7 +131,11 @@ def __main__():
         ),
         TestCase(
             60678.0, 60681.0, neg_ids=["ZTF24aahcirg", "ZTF24aahcirc", "ZTF20abcyldz"],
-            pos_ids=[], notes="ZTF24aahcirg, deep drilling bogus", name="bogus4"
+            pos_ids=[], notes="ZTF24aahcirg, deep drilling bogus, nuclear", name="bogus4"
+        ),
+        TestCase(
+            61050.0, 61055.0, neg_ids=["ZTF23aabjdzg"], pos_ids=[],
+            notes="ZTF23aabjdzg, nuclear bogus (high drb), bad host association", name="bogus5"
         )
     ]
 
@@ -176,19 +181,11 @@ def __main__():
     TCs = TC_z001 + TC_z0015 + TC_bad_hist + TC_bad_assosciation + TC_no_lims + \
         TC_bogus + TC_loose_lims
 
-    TC_24B = TestCase(
-        60523.0, 60706.0, neg_ids=[], pos_ids=[
-            'ZTF20aacedmi', 'ZTF20abidglx', 'ZTF24aadnhsl', 'ZTF24aaejecr',
-            'ZTF24aaejvcx', 'ZTF24aaemydm', 'ZTF24aaerzgo', 'ZTF24aagpsfh',
-            'ZTF24aahgaov', 'ZTF24aahgqwk', 'ZTF24aahgtjt', 'ZTF24aahiabd',
-            'ZTF24aahnklb', 'ZTF24aahszxf', 'ZTF24aajqamj', 'ZTF24aamlalc',
-            'ZTF24aamtvxb', 'ZTF24aankvcy', 'ZTF24aaozxhx', 'ZTF24aaqaroi',
-            'ZTF24aaqkvyl', 'ZTF24aaqtode', 'ZTF24aarygdq', 'ZTF24aatbpbr',
-            'ZTF24aatytqv', 'ZTF24aaupozr', 'ZTF24aauyikt', 'ZTF24aawrofs'
-        ], notes="2024B", name="2024B"
-    )
+    # TC_25A = TestCase(
+    #     60707.0, 60888.0, neg_ids=[], pos_ids=[], notes="2025A", name="2025A"
+    # )
 
-    TCs = [TC_24B]
+    # TCs = [TC_z001[0]] + [TC_bogus[-1]]
 
     print(f"Evaluating {len(TCs)} TestCases")
     statuses = []
